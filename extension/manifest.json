@@ -8,13 +8,12 @@
     "48": "src/assets/icons/icon48.svg",
     "128": "src/assets/icons/icon128.svg"
   },
-  "permissions": ["storage", "clipboardWrite"],
+  "permissions": [
+    "storage",
+    "clipboardWrite"
+  ],
   "action": {
     "default_popup": "src/popup/popup.html",
     "default_title": "Snipy"
-  },
-  "background": {
-    // "service_worker": "src/background/background.js"
-     "scripts": ["src/background/background.js"]
   }
 }
