@@ -4,16 +4,21 @@
   "version": "1.0.0",
   "description": "Lightning-fast developer snippet manager. One click = copy.",
   "icons": {
-    "16": "src/assets/icons/icon.png",
-    "48": "src/assets/icons/icon.png",
-    "128": "src/assets/icons/icon.png"
+    "16": "src/assets/icons/icon16.png",
+    "48": "src/assets/icons/icon48.png",
+    "128": "src/assets/icons/icon128.png"
   },
-  "permissions": [
-    "storage",
-    "clipboardWrite"
-  ],
+  "permissions": ["storage", "clipboardWrite"],
   "action": {
     "default_popup": "src/popup/popup.html",
     "default_title": "Snipy"
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "snipy@shoxjaxon77.dev",
+      "data_collection_permissions": {
+        "required": ["none"]
+      }
+    }
   }
 }
