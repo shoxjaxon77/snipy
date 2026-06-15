@@ -112,6 +112,11 @@ class SnippyApp {
     pageSnippets.forEach((snippet) => {
       const row = document.createElement('tr');
 
+      row.onclick = (e) => {
+        if (e.target.closest('.btn-action')) return;
+        this.handleCopy(snippet);
+      };
+
       // Icon + Name
       const nameCell = document.createElement('td');
       nameCell.className = 'col-name';
@@ -147,10 +152,6 @@ class SnippyApp {
       contentDiv.className = 'content-preview';
       contentDiv.textContent = snippet.content;
       contentDiv.title = snippet.content;
-      contentDiv.onclick = (e) => {
-        e.stopPropagation();
-        this.handleCopy(snippet);
-      };
       contentCell.appendChild(contentDiv);
       row.appendChild(contentCell);
 
