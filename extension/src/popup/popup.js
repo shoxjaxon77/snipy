@@ -8,13 +8,9 @@ import { getSnippetIcon, renderIcon } from '../utils/icons.js';
 class SnippyApp {
   constructor() {
     this.snippetService = new SnippetService();
-    this.searchService = new SearchService(this.snippetService);
-    this.currentFilter = 'all';
-    this.currentQuery = '';
     this.allSnippets = [];
     this.filteredSnippets = [];
-    this.currentPage = 1;
-    this.itemsPerPage = 20;
+    this.currentQuery = '';
     this.init();
   }
 
@@ -25,40 +21,9 @@ class SnippyApp {
 
   attachEventListeners() {
     document.getElementById('btn-new').onclick = () => this.openCreateModal();
-    document.getElementById('btn-settings').onclick = () => this.showSettings();
-
-    // Search
     document.getElementById('search-input').oninput = (e) => {
       this.currentQuery = e.target.value;
-      this.currentPage = 1;
       this.applyFilters();
-    };
-
-    // Filters
-    document.querySelectorAll('.filter-btn').forEach((btn) => {
-      btn.onclick = () => {
-        document.querySelectorAll('.filter-btn').forEach((b) => b.classList.remove('active'));
-        btn.classList.add('active');
-        this.currentFilter = btn.dataset.filter;
-        this.currentPage = 1;
-        this.applyFilters();
-      };
-    });
-
-    // Pagination
-    document.getElementById('btn-prev').onclick = () => {
-      if (this.currentPage > 1) {
-        this.currentPage--;
-        this.renderTable();
-      }
-    };
-
-    document.getElementById('btn-next').onclick = () => {
-      const maxPages = Math.ceil(this.filteredSnippets.length / this.itemsPerPage);
-      if (this.currentPage < maxPages) {
-        this.currentPage++;
-        this.renderTable();
-      }
     };
   }
 
@@ -70,20 +35,11 @@ class SnippyApp {
   async applyFilters() {
     let results = this.allSnippets;
 
-    // Filter by type
-    if (this.currentFilter === 'favorites') {
-      results = results.filter((s) => s.favorite);
-    } else if (this.currentFilter === 'recent') {
-      results = await this.snippetService.getRecent();
-    }
-
-    // Search
     if (this.currentQuery.trim()) {
       const query = this.currentQuery.toLowerCase();
       results = results.filter((s) => {
         return (
           s.title.toLowerCase().includes(query) ||
-          s.category.toLowerCase().includes(query) ||
           s.content.toLowerCase().includes(query)
         );
       });
@@ -99,48 +55,21 @@ class SnippyApp {
 
     if (this.filteredSnippets.length === 0) {
       document.getElementById('empty-state').style.display = 'flex';
-      document.querySelector('.table-wrapper').style.justifyContent = 'center';
       return;
     }
 
     document.getElementById('empty-state').style.display = 'none';
 
-    const start = (this.currentPage - 1) * this.itemsPerPage;
-    const end = start + this.itemsPerPage;
-    const pageSnippets = this.filteredSnippets.slice(start, end);
-
-    pageSnippets.forEach((snippet) => {
+    this.filteredSnippets.forEach((snippet) => {
       const row = document.createElement('tr');
 
-      // Icon + Name
+      // Name column
       const nameCell = document.createElement('td');
       nameCell.className = 'col-name';
-      const iconName = getSnippetIcon(snippet.title, snippet.category);
-      const iconEl = renderIcon(iconName, 18);
-      const nameDiv = document.createElement('div');
-      nameDiv.className = 'snippet-name-cell';
-      const iconContainer = document.createElement('div');
-      iconContainer.className = 'snippet-icon';
-      iconContainer.appendChild(iconEl);
-      const nameSpan = document.createElement('span');
-      nameSpan.className = 'snippet-name';
-      nameSpan.textContent = snippet.title;
-      nameSpan.title = snippet.title;
-      nameDiv.appendChild(iconContainer);
-      nameDiv.appendChild(nameSpan);
-      nameCell.appendChild(nameDiv);
+      nameCell.textContent = snippet.title;
       row.appendChild(nameCell);
 
-      // Category
-      const categoryCell = document.createElement('td');
-      categoryCell.className = 'col-category';
-      const categoryBadge = document.createElement('span');
-      categoryBadge.className = 'category-badge';
-      categoryBadge.textContent = snippet.category;
-      categoryCell.appendChild(categoryBadge);
-      row.appendChild(categoryCell);
-
-      // Content
+      // Content column
       const contentCell = document.createElement('td');
       contentCell.className = 'col-content';
       const contentDiv = document.createElement('div');
@@ -154,21 +83,7 @@ class SnippyApp {
       contentCell.appendChild(contentDiv);
       row.appendChild(contentCell);
 
-      // Favorite
-      const favoriteCell = document.createElement('td');
-      favoriteCell.className = 'col-favorite';
-      const favoriteBtn = document.createElement('button');
-      favoriteBtn.className = 'favorite-btn';
-      if (snippet.favorite) favoriteBtn.classList.add('active');
-      favoriteBtn.innerHTML = snippet.favorite ? '★' : '☆';
-      favoriteBtn.onclick = (e) => {
-        e.stopPropagation();
-        this.handleToggleFavorite(snippet.id, !snippet.favorite);
-      };
-      favoriteCell.appendChild(favoriteBtn);
-      row.appendChild(favoriteCell);
-
-      // Actions
+      // Actions column
       const actionsCell = document.createElement('td');
       actionsCell.className = 'col-actions';
       const actionsDiv = document.createElement('div');
@@ -184,7 +99,7 @@ class SnippyApp {
       };
 
       const btnDelete = document.createElement('button');
-      btnDelete.className = 'btn-action btn-delete';
+      btnDelete.className = 'btn-action';
       btnDelete.textContent = '🗑️';
       btnDelete.title = 'Delete';
       btnDelete.onclick = (e) => {
@@ -200,15 +115,7 @@ class SnippyApp {
       tbody.appendChild(row);
     });
 
-    this.updateFooter();
-  }
-
-  updateFooter() {
     document.getElementById('snippets-count').textContent = `${this.filteredSnippets.length} snippets`;
-    const maxPages = Math.ceil(this.filteredSnippets.length / this.itemsPerPage);
-    document.getElementById('current-page').textContent = this.currentPage;
-    document.getElementById('btn-prev').disabled = this.currentPage <= 1;
-    document.getElementById('btn-next').disabled = this.currentPage >= maxPages;
   }
 
   async handleCopy(snippet) {
@@ -219,13 +126,6 @@ class SnippyApp {
     } else {
       Toast.error('Failed to copy');
     }
-  }
-
-  async handleToggleFavorite(id, favorite) {
-    await this.snippetService.update(id, { favorite });
-    const snippet = this.allSnippets.find((s) => s.id === id);
-    if (snippet) snippet.favorite = favorite;
-    this.renderTable();
   }
 
   handleEdit(snippet) {
@@ -271,7 +171,6 @@ class SnippyApp {
           const created = await this.snippetService.create(data);
           this.allSnippets.push(created);
           Toast.success('Created');
-          this.currentPage = 1;
           await this.applyFilters();
         } catch (err) {
           Toast.error('Failed to create');
@@ -280,10 +179,6 @@ class SnippyApp {
       },
     });
     modal.open();
-  }
-
-  showSettings() {
-    Toast.success('Settings coming soon');
   }
 }
 

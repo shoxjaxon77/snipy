@@ -58,7 +58,7 @@ export class Modal {
     form.id = 'snippet-form';
 
     const titleLabel = document.createElement('label');
-    titleLabel.textContent = 'Title';
+    titleLabel.textContent = 'Name';
     titleLabel.style.cssText = `
       display: block;
       color: #9ca3af;
@@ -95,53 +95,6 @@ export class Modal {
       e.target.style.borderColor = 'rgba(99, 102, 241, 0.2)';
       e.target.style.background = 'rgba(255, 255, 255, 0.05)';
     };
-
-    const categoryLabel = document.createElement('label');
-    categoryLabel.textContent = 'Category';
-    categoryLabel.style.cssText = `
-      display: block;
-      color: #9ca3af;
-      font-size: 11px;
-      margin-bottom: 5px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    `;
-
-    const categorySelect = document.createElement('select');
-    categorySelect.id = 'snippet-category';
-    categorySelect.style.cssText = `
-      width: 100%;
-      padding: 8px 10px;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(99, 102, 241, 0.2);
-      border-radius: 5px;
-      color: #e5e7eb;
-      font-size: 13px;
-      margin-bottom: 12px;
-      box-sizing: border-box;
-      transition: all 0.2s;
-      font-family: inherit;
-      cursor: pointer;
-    `;
-    categorySelect.onfocus = (e) => {
-      e.target.style.borderColor = '#6366f1';
-      e.target.style.background = 'rgba(255, 255, 255, 0.08)';
-    };
-    categorySelect.onblur = (e) => {
-      e.target.style.borderColor = 'rgba(99, 102, 241, 0.2)';
-      e.target.style.background = 'rgba(255, 255, 255, 0.05)';
-    };
-
-    DEFAULT_CATEGORIES.forEach((cat) => {
-      const option = document.createElement('option');
-      option.value = cat;
-      option.textContent = cat;
-      if (this.initialData?.category === cat) {
-        option.selected = true;
-      }
-      categorySelect.appendChild(option);
-    });
 
     const contentLabel = document.createElement('label');
     contentLabel.textContent = 'Content';
@@ -183,36 +136,6 @@ export class Modal {
       e.target.style.background = 'rgba(255, 255, 255, 0.05)';
     };
 
-    const favoriteContainer = document.createElement('div');
-    favoriteContainer.style.cssText = `
-      display: flex;
-      align-items: center;
-      margin-bottom: 16px;
-      gap: 8px;
-    `;
-
-    const favoriteCheckbox = document.createElement('input');
-    favoriteCheckbox.id = 'snippet-favorite';
-    favoriteCheckbox.type = 'checkbox';
-    favoriteCheckbox.checked = this.initialData?.favorite || false;
-    favoriteCheckbox.style.cssText = `
-      width: 16px;
-      height: 16px;
-      cursor: pointer;
-      accent-color: #6366f1;
-    `;
-
-    const favoriteLabel = document.createElement('label');
-    favoriteLabel.htmlFor = 'snippet-favorite';
-    favoriteLabel.textContent = 'Add to favorites';
-    favoriteLabel.style.cssText = `
-      color: #9ca3af;
-      font-size: 12px;
-      cursor: pointer;
-    `;
-
-    favoriteContainer.appendChild(favoriteCheckbox);
-    favoriteContainer.appendChild(favoriteLabel);
 
     const buttons = document.createElement('div');
     buttons.style.cssText = `
@@ -273,20 +196,17 @@ export class Modal {
 
     form.appendChild(titleLabel);
     form.appendChild(titleInput);
-    form.appendChild(categoryLabel);
-    form.appendChild(categorySelect);
     form.appendChild(contentLabel);
     form.appendChild(contentInput);
-    form.appendChild(favoriteContainer);
     form.appendChild(buttons);
 
     form.onsubmit = (e) => {
       e.preventDefault();
       const data = {
         title: titleInput.value,
-        category: categorySelect.value,
+        category: 'Snippet',
         content: contentInput.value,
-        favorite: favoriteCheckbox.checked,
+        favorite: false,
       };
       if (this.onSave) this.onSave(data);
       this.close();

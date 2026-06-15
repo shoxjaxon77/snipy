@@ -8,45 +8,25 @@
 </head>
 <body>
   <div id="app">
-    <!-- Header -->
     <header id="header">
       <div class="header-left">
-        <img class="logo" src="../assets/icons/icon.png" alt="Snipy" />
-        <div class="header-title">
-          <h1>Snipy</h1>
-          <p>Developer Snippets</p>
-        </div>
+        <h1>Snipy</h1>
       </div>
       <div class="header-right">
-        <button class="btn-new" id="btn-new">+ New Snippet</button>
-        <button class="btn-settings" id="btn-settings">⚙️</button>
+        <button id="btn-new" class="btn-header">+ New</button>
       </div>
     </header>
 
-    <!-- Search & Filters -->
-    <div class="toolbar">
-      <div class="search-box">
-        <span class="search-icon">🔍</span>
-        <input type="text" id="search-input" placeholder="Search snippets..." />
-        <span class="search-hint">⌘ K</span>
-      </div>
-
-      <div class="filters">
-        <button class="filter-btn active" data-filter="all">All</button>
-        <button class="filter-btn" data-filter="favorites">★ Favorites</button>
-        <button class="filter-btn" data-filter="recent">⏱ Recent</button>
-      </div>
+    <div class="search-container">
+      <input type="text" id="search-input" placeholder="Search..." class="search-input" />
     </div>
 
-    <!-- Table -->
     <div class="table-wrapper">
       <table class="snippets-table">
         <thead>
           <tr>
             <th class="col-name">NAME</th>
-            <th class="col-category">CATEGORY</th>
             <th class="col-content">CONTENT</th>
-            <th class="col-favorite">FAVORITE</th>
             <th class="col-actions">ACTIONS</th>
           </tr>
         </thead>
@@ -56,19 +36,11 @@
 
       <div id="empty-state" class="empty-state" style="display: none;">
         <p>No snippets yet</p>
-        <p class="empty-subtitle">Create your first snippet to get started</p>
       </div>
     </div>
 
-    <!-- Footer -->
     <footer class="footer">
-      <span class="snippets-count" id="snippets-count">0 snippets</span>
-      <div class="pagination">
-        <button class="btn-pagination" id="btn-prev">&lt;</button>
-        <span class="pagination-info"><span id="current-page">1</span></span>
-        <button class="btn-pagination" id="btn-next">&gt;</button>
-      </div>
-      <span class="copy-hint">Click content to copy</span>
+      <span id="snippets-count">0 snippets</span>
     </footer>
   </div>
 
