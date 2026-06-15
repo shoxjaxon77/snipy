@@ -67,8 +67,8 @@ export class SearchBar {
 
     const filters = [
       { label: 'All', value: 'all' },
-      { label: '★ Favorites', value: 'favorites' },
-      { label: '⏰ Recent', value: 'recent' },
+      { label: 'Favorites', value: 'favorites' },
+      { label: 'Recent', value: 'recent' },
     ];
 
     let activeFilter = 'all';
