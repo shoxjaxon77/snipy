@@ -1,0 +1,20 @@
+{
+  "manifest_version": 3,
+  "name": "Snipy",
+  "version": "1.0.0",
+  "description": "Lightning-fast developer snippet manager. One click = copy.",
+  "icons": {
+    "16": "src/assets/icons/icon16.svg",
+    "48": "src/assets/icons/icon48.svg",
+    "128": "src/assets/icons/icon128.svg"
+  },
+  "permissions": ["storage", "clipboardWrite"],
+  "action": {
+    "default_popup": "src/popup/popup.html",
+    "default_title": "Snipy"
+  },
+  "background": {
+    // "service_worker": "src/background/background.js"
+     "scripts": ["src/background/background.js"]
+  }
+}
