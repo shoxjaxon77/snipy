@@ -1,5 +1,5 @@
-import { COLORS } from '../utils/constants.js';
-import { truncateString } from '../utils/helpers.js';
+import { COLORS } from "../utils/constants.js";
+import { getSnippetIcon, renderIcon } from "../utils/icons.js";
 
 export class SnippetCard {
   constructor(snippet, options = {}) {
@@ -12,231 +12,177 @@ export class SnippetCard {
   }
 
   render() {
-    const card = document.createElement('button');
-    card.className = 'snippet-card';
-    card.style.cssText = `
-      background-color: ${COLORS.surface};
-      border: 1px solid ${COLORS.border};
+    const row = document.createElement("button");
+    row.className = "snippet-row";
+
+    const content = document.createElement("div");
+    content.className = "snippet-content";
+
+    // Get icon
+    const iconName = getSnippetIcon(this.snippet.title, this.snippet.category);
+    const iconEl = renderIcon(iconName, 24);
+    iconEl.style.cssText = `
+      flex-shrink: 0;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(99, 102, 241, 0.1);
       border-radius: 6px;
-      padding: 16px;
-      cursor: pointer;
-      text-align: left;
-      transition: all 0.2s ease;
-      width: 100%;
-      position: relative;
-      min-height: 100px;
-      display: flex;
-      flex-direction: column;
+      color: #6366f1;
     `;
 
-    card.onmouseover = () => {
-      card.style.backgroundColor = COLORS.hover;
-      card.style.borderColor = COLORS.primary;
-      card.style.transform = 'scale(1.02)';
-      card.style.boxShadow = `0 4px 12px rgba(99, 102, 241, 0.1)`;
-    };
+    // Title
+    const title = document.createElement("div");
+    title.className = "snippet-title";
+    title.textContent = this.snippet.title;
+    title.title = this.snippet.title;
 
-    card.onmouseout = () => {
-      card.style.backgroundColor = COLORS.surface;
-      card.style.borderColor = COLORS.border;
-      card.style.transform = 'scale(1)';
-      card.style.boxShadow = 'none';
-    };
+    // Category
+    const category = document.createElement("div");
+    category.className = "snippet-category";
+    category.textContent = this.snippet.category;
 
-    const header = document.createElement('div');
-    header.style.cssText = `
-      display: flex;
-      justify-content: space-between;
-      align-items: start;
-      margin-bottom: 8px;
-    `;
-
-    const titleAndCategory = document.createElement('div');
+    // Title + Category wrapper
+    const titleAndCategory = document.createElement("div");
     titleAndCategory.style.cssText = `
       flex: 1;
       min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
     `;
-
-    const title = document.createElement('div');
-    title.textContent = this.snippet.title;
-    title.style.cssText = `
-      color: ${COLORS.textPrimary};
-      font-size: 14px;
-      font-weight: 600;
-      margin-bottom: 4px;
-      word-break: break-word;
-    `;
-
-    const category = document.createElement('div');
-    category.textContent = this.snippet.category;
-    category.style.cssText = `
-      color: ${COLORS.textSecondary};
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      opacity: 0.7;
-    `;
-
     titleAndCategory.appendChild(title);
     titleAndCategory.appendChild(category);
 
-    const actions = document.createElement('div');
-    actions.style.cssText = `
+    // Header (icon + title + category)
+    const header = document.createElement("div");
+    header.className = "snippet-header";
+    header.style.cssText = `
       display: flex;
-      gap: 4px;
-      margin-left: 8px;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+      min-width: 0;
     `;
+    header.appendChild(iconEl);
+    header.appendChild(titleAndCategory);
 
-    const favoriteBtn = document.createElement('button');
-    favoriteBtn.innerHTML = this.snippet.favorite ? '★' : '☆';
-    favoriteBtn.style.cssText = `
-      background: none;
-      border: none;
-      color: ${this.snippet.favorite ? '#FBBF24' : COLORS.textSecondary};
-      cursor: pointer;
-      font-size: 16px;
-      padding: 4px 8px;
-      transition: all 0.2s;
-      flex-shrink: 0;
-    `;
-    favoriteBtn.title = this.snippet.favorite ? 'Remove from favorites' : 'Add to favorites';
-    favoriteBtn.onclick = (e) => {
+    // Favorite button
+    const favorite = document.createElement("button");
+    favorite.className = "snippet-favorite";
+    if (this.snippet.favorite) favorite.classList.add("active");
+    favorite.innerHTML = this.snippet.favorite ? "★" : "☆";
+    favorite.title = this.snippet.favorite
+      ? "Remove from favorites"
+      : "Add to favorites";
+
+    favorite.onclick = (e) => {
       e.stopPropagation();
       this.snippet.favorite = !this.snippet.favorite;
-      favoriteBtn.innerHTML = this.snippet.favorite ? '★' : '☆';
-      favoriteBtn.style.color = this.snippet.favorite ? '#FBBF24' : COLORS.textSecondary;
-      if (this.onToggleFavorite) this.onToggleFavorite(this.snippet.id, this.snippet.favorite);
+      favorite.innerHTML = this.snippet.favorite ? "★" : "☆";
+      favorite.classList.toggle("active");
+      if (this.onToggleFavorite)
+        this.onToggleFavorite(this.snippet.id, this.snippet.favorite);
     };
 
-    const menuBtn = document.createElement('button');
-    menuBtn.textContent = '⋯';
-    menuBtn.style.cssText = `
-      background: none;
-      border: none;
-      color: ${COLORS.textSecondary};
-      cursor: pointer;
-      font-size: 16px;
-      padding: 4px 8px;
-      transition: all 0.2s;
-      flex-shrink: 0;
-    `;
-    menuBtn.onclick = (e) => {
-      e.stopPropagation();
-      this.showContextMenu(menuBtn);
-    };
+    content.appendChild(header);
+    content.appendChild(favorite);
 
-    actions.appendChild(favoriteBtn);
-    actions.appendChild(menuBtn);
+    // Preview
+    const preview = document.createElement("div");
+    preview.className = "snippet-preview";
+    const previewText =
+      this.snippet.content.length > 60
+        ? this.snippet.content.substring(0, 60) + "..."
+        : this.snippet.content;
+    preview.textContent = previewText;
+    preview.title = this.snippet.content;
 
-    header.appendChild(titleAndCategory);
-    header.appendChild(actions);
+    row.appendChild(content);
+    row.appendChild(preview);
 
-    const content = document.createElement('div');
-    content.textContent = truncateString(this.snippet.content, 80);
-    content.style.cssText = `
-      color: ${COLORS.textSecondary};
-      font-size: 13px;
-      line-height: 1.4;
-      flex: 1;
-      font-family: 'Monaco', 'Courier New', monospace;
-      word-break: break-all;
-      opacity: 0.8;
-    `;
-
-    const footer = document.createElement('div');
-    footer.style.cssText = `
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: auto;
-      padding-top: 8px;
-      border-top: 1px solid ${COLORS.border};
-      font-size: 11px;
-      color: ${COLORS.textSecondary};
-    `;
-
-    const date = new Date(this.snippet.createdAt);
-    const dateStr = date.toLocaleDateString();
-    footer.textContent = `Created ${dateStr}`;
-
-    card.appendChild(header);
-    card.appendChild(content);
-    card.appendChild(footer);
-
-    card.onclick = () => {
+    row.onclick = () => {
       if (this.onCopy) this.onCopy(this.snippet);
     };
 
-    this.element = card;
-    return card;
+    row.oncontextmenu = (e) => {
+      e.preventDefault();
+      this.showContextMenu(e.pageX, e.pageY);
+    };
+
+    this.element = row;
+    return row;
   }
 
-  showContextMenu(trigger) {
-    const existing = document.getElementById('context-menu');
+  showContextMenu(x, y) {
+    const existing = document.getElementById("context-menu");
     if (existing) existing.remove();
 
-    const menu = document.createElement('div');
-    menu.id = 'context-menu';
+    const menu = document.createElement("div");
+    menu.id = "context-menu";
     menu.style.cssText = `
       position: fixed;
-      background-color: ${COLORS.surface};
-      border: 1px solid ${COLORS.border};
-      border-radius: 4px;
+      background: rgba(17, 24, 39, 0.95);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+      border-radius: 6px;
       z-index: 5001;
-      min-width: 120px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-      animation: slideIn 0.2s ease-out;
+      min-width: 100px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+      top: ${y}px;
+      left: ${x}px;
+      animation: slideIn 0.15s ease-out;
     `;
 
-    const rect = trigger.getBoundingClientRect();
-    menu.style.top = `${rect.bottom + 4}px`;
-    menu.style.left = `${rect.left}px`;
-
-    const editBtn = document.createElement('button');
-    editBtn.textContent = 'Edit';
+    const editBtn = document.createElement("button");
+    editBtn.textContent = "Edit";
     editBtn.style.cssText = `
       display: block;
       width: 100%;
       padding: 8px 12px;
       background: none;
       border: none;
-      color: ${COLORS.textPrimary};
+      color: #e5e7eb;
       cursor: pointer;
       text-align: left;
-      font-size: 13px;
-      transition: background-color 0.2s;
+      font-size: 12px;
+      transition: background 0.15s;
+      font-family: inherit;
+      border-bottom: 1px solid rgba(99, 102, 241, 0.1);
     `;
     editBtn.onmouseover = () => {
-      editBtn.style.backgroundColor = COLORS.hover;
+      editBtn.style.backgroundColor = "rgba(99, 102, 241, 0.1)";
     };
     editBtn.onmouseout = () => {
-      editBtn.style.backgroundColor = 'transparent';
+      editBtn.style.backgroundColor = "transparent";
     };
     editBtn.onclick = () => {
       menu.remove();
       if (this.onEdit) this.onEdit(this.snippet);
     };
 
-    const deleteBtn = document.createElement('button');
-    deleteBtn.textContent = 'Delete';
+    const deleteBtn = document.createElement("button");
+    deleteBtn.textContent = "Delete";
     deleteBtn.style.cssText = `
       display: block;
       width: 100%;
       padding: 8px 12px;
       background: none;
       border: none;
-      color: '#EF4444';
+      color: #ef4444;
       cursor: pointer;
       text-align: left;
-      font-size: 13px;
-      transition: background-color 0.2s;
-      border-top: 1px solid ${COLORS.border};
+      font-size: 12px;
+      transition: background 0.15s;
+      font-family: inherit;
     `;
     deleteBtn.onmouseover = () => {
-      deleteBtn.style.backgroundColor = COLORS.hover;
+      deleteBtn.style.backgroundColor = "rgba(239, 68, 68, 0.1)";
     };
     deleteBtn.onmouseout = () => {
-      deleteBtn.style.backgroundColor = 'transparent';
+      deleteBtn.style.backgroundColor = "transparent";
     };
     deleteBtn.onclick = () => {
       menu.remove();
@@ -249,8 +195,14 @@ export class SnippetCard {
     menu.appendChild(deleteBtn);
     document.body.appendChild(menu);
 
-    document.addEventListener('click', () => {
-      if (document.contains(menu)) menu.remove();
-    }, { once: true });
+    setTimeout(() => {
+      document.addEventListener(
+        "click",
+        () => {
+          if (document.contains(menu)) menu.remove();
+        },
+        { once: true },
+      );
+    }, 0);
   }
 }

@@ -1,22 +1,20 @@
 import { SnippetService } from '../services/SnippetService.js';
 import { SearchService } from '../services/SearchService.js';
 import { ClipboardService } from '../services/ClipboardService.js';
-import { SnippetCard } from '../components/SnippetCard.js';
-import { SearchBar } from '../components/SearchBar.js';
 import { Modal } from '../components/Modal.js';
 import { Toast } from '../components/Toast.js';
+import { getSnippetIcon, renderIcon } from '../utils/icons.js';
 
 class SnippyApp {
   constructor() {
     this.snippetService = new SnippetService();
     this.searchService = new SearchService(this.snippetService);
-    this.searchBar = null;
-    this.currentFilter = {
-      query: '',
-      filter: 'all',
-      category: '',
-    };
-    this.currentSnippets = [];
+    this.currentFilter = 'all';
+    this.currentQuery = '';
+    this.allSnippets = [];
+    this.filteredSnippets = [];
+    this.currentPage = 1;
+    this.itemsPerPage = 20;
     this.init();
   }
 
@@ -27,93 +25,190 @@ class SnippyApp {
 
   attachEventListeners() {
     document.getElementById('btn-new').onclick = () => this.openCreateModal();
-    document.getElementById('btn-export').onclick = () => this.exportSnippets();
-    document.getElementById('btn-import').onclick = () => this.importSnippets();
+    document.getElementById('btn-settings').onclick = () => this.showSettings();
+
+    // Search
+    document.getElementById('search-input').oninput = (e) => {
+      this.currentQuery = e.target.value;
+      this.currentPage = 1;
+      this.applyFilters();
+    };
+
+    // Filters
+    document.querySelectorAll('.filter-btn').forEach((btn) => {
+      btn.onclick = () => {
+        document.querySelectorAll('.filter-btn').forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+        this.currentFilter = btn.dataset.filter;
+        this.currentPage = 1;
+        this.applyFilters();
+      };
+    });
+
+    // Pagination
+    document.getElementById('btn-prev').onclick = () => {
+      if (this.currentPage > 1) {
+        this.currentPage--;
+        this.renderTable();
+      }
+    };
+
+    document.getElementById('btn-next').onclick = () => {
+      const maxPages = Math.ceil(this.filteredSnippets.length / this.itemsPerPage);
+      if (this.currentPage < maxPages) {
+        this.currentPage++;
+        this.renderTable();
+      }
+    };
   }
 
   async loadAndRender() {
-    const allSnippets = await this.snippetService.getAll();
-    const categories = this.searchService.getCategories(allSnippets);
-
-    if (!this.searchBar) {
-      const searchBarContainer = document.getElementById('search-bar');
-      this.searchBar = new SearchBar({
-        categories,
-        onSearch: (query) => this.handleSearch(query),
-        onFilterChange: (filter) => this.handleFilterChange(filter),
-      });
-      searchBarContainer.appendChild(this.searchBar.render());
-    }
-
-    await this.applyFilters();
-  }
-
-  async handleSearch(query) {
-    this.currentFilter.query = query;
-    await this.applyFilters();
-  }
-
-  async handleFilterChange(filter) {
-    this.currentFilter = filter;
+    this.allSnippets = await this.snippetService.getAll();
     await this.applyFilters();
   }
 
   async applyFilters() {
-    const { query, filter, category } = this.currentFilter;
+    let results = this.allSnippets;
 
-    let results;
-    if (filter === 'favorites') {
-      const favorites = await this.snippetService.getFavorites();
-      const categories = this.searchService.getCategories(favorites);
-      this.searchService = new SearchService(this.snippetService);
-      results = await this.searchService.search(query, {
-        favorites: true,
-        category: category || null,
-      });
-    } else if (filter === 'recent') {
+    // Filter by type
+    if (this.currentFilter === 'favorites') {
+      results = results.filter((s) => s.favorite);
+    } else if (this.currentFilter === 'recent') {
       results = await this.snippetService.getRecent();
-      if (query) {
-        results = results.filter((s) => {
-          const lowerQuery = query.toLowerCase();
-          return (
-            s.title.toLowerCase().includes(lowerQuery) ||
-            s.category.toLowerCase().includes(lowerQuery) ||
-            s.content.toLowerCase().includes(lowerQuery)
-          );
-        });
-      }
-    } else {
-      results = await this.searchService.search(query, {
-        category: category || null,
+    }
+
+    // Search
+    if (this.currentQuery.trim()) {
+      const query = this.currentQuery.toLowerCase();
+      results = results.filter((s) => {
+        return (
+          s.title.toLowerCase().includes(query) ||
+          s.category.toLowerCase().includes(query) ||
+          s.content.toLowerCase().includes(query)
+        );
       });
     }
 
-    this.currentSnippets = results;
-    this.renderSnippets(results);
+    this.filteredSnippets = results;
+    this.renderTable();
   }
 
-  renderSnippets(snippets) {
-    const container = document.getElementById('snippets-container');
-    const emptyState = document.getElementById('empty-state');
+  renderTable() {
+    const tbody = document.getElementById('snippets-tbody');
+    tbody.innerHTML = '';
 
-    container.innerHTML = '';
-
-    if (snippets.length === 0) {
-      emptyState.style.display = 'flex';
+    if (this.filteredSnippets.length === 0) {
+      document.getElementById('empty-state').style.display = 'flex';
+      document.querySelector('.table-wrapper').style.justifyContent = 'center';
       return;
     }
 
-    emptyState.style.display = 'none';
+    document.getElementById('empty-state').style.display = 'none';
 
-    snippets.forEach((snippet) => {
-      const card = new SnippetCard(snippet, {
-        onCopy: (snippet) => this.handleCopy(snippet),
-        onToggleFavorite: (id, favorite) => this.handleToggleFavorite(id, favorite),
-        onEdit: (snippet) => this.handleEdit(snippet),
-        onDelete: (id) => this.handleDelete(id),
-      });
-      container.appendChild(card.render());
+    const start = (this.currentPage - 1) * this.itemsPerPage;
+    const end = start + this.itemsPerPage;
+    const pageSnippets = this.filteredSnippets.slice(start, end);
+
+    pageSnippets.forEach((snippet) => {
+      const row = document.createElement('tr');
+
+      // Icon + Name
+      const nameCell = document.createElement('td');
+      nameCell.className = 'col-name';
+      const iconName = getSnippetIcon(snippet.title, snippet.category);
+      const iconEl = renderIcon(iconName, 18);
+      const nameDiv = document.createElement('div');
+      nameDiv.className = 'snippet-name-cell';
+      const iconContainer = document.createElement('div');
+      iconContainer.className = 'snippet-icon';
+      iconContainer.appendChild(iconEl);
+      const nameSpan = document.createElement('span');
+      nameSpan.className = 'snippet-name';
+      nameSpan.textContent = snippet.title;
+      nameSpan.title = snippet.title;
+      nameDiv.appendChild(iconContainer);
+      nameDiv.appendChild(nameSpan);
+      nameCell.appendChild(nameDiv);
+      row.appendChild(nameCell);
+
+      // Category
+      const categoryCell = document.createElement('td');
+      categoryCell.className = 'col-category';
+      const categoryBadge = document.createElement('span');
+      categoryBadge.className = 'category-badge';
+      categoryBadge.textContent = snippet.category;
+      categoryCell.appendChild(categoryBadge);
+      row.appendChild(categoryCell);
+
+      // Content
+      const contentCell = document.createElement('td');
+      contentCell.className = 'col-content';
+      const contentDiv = document.createElement('div');
+      contentDiv.className = 'content-preview';
+      contentDiv.textContent = snippet.content;
+      contentDiv.title = snippet.content;
+      contentDiv.onclick = (e) => {
+        e.stopPropagation();
+        this.handleCopy(snippet);
+      };
+      contentCell.appendChild(contentDiv);
+      row.appendChild(contentCell);
+
+      // Favorite
+      const favoriteCell = document.createElement('td');
+      favoriteCell.className = 'col-favorite';
+      const favoriteBtn = document.createElement('button');
+      favoriteBtn.className = 'favorite-btn';
+      if (snippet.favorite) favoriteBtn.classList.add('active');
+      favoriteBtn.innerHTML = snippet.favorite ? '★' : '☆';
+      favoriteBtn.onclick = (e) => {
+        e.stopPropagation();
+        this.handleToggleFavorite(snippet.id, !snippet.favorite);
+      };
+      favoriteCell.appendChild(favoriteBtn);
+      row.appendChild(favoriteCell);
+
+      // Actions
+      const actionsCell = document.createElement('td');
+      actionsCell.className = 'col-actions';
+      const actionsDiv = document.createElement('div');
+      actionsDiv.className = 'actions-cell';
+
+      const btnEdit = document.createElement('button');
+      btnEdit.className = 'btn-action';
+      btnEdit.textContent = '✏️';
+      btnEdit.title = 'Edit';
+      btnEdit.onclick = (e) => {
+        e.stopPropagation();
+        this.handleEdit(snippet);
+      };
+
+      const btnDelete = document.createElement('button');
+      btnDelete.className = 'btn-action btn-delete';
+      btnDelete.textContent = '🗑️';
+      btnDelete.title = 'Delete';
+      btnDelete.onclick = (e) => {
+        e.stopPropagation();
+        this.handleDelete(snippet.id, snippet.title);
+      };
+
+      actionsDiv.appendChild(btnEdit);
+      actionsDiv.appendChild(btnDelete);
+      actionsCell.appendChild(actionsDiv);
+      row.appendChild(actionsCell);
+
+      tbody.appendChild(row);
     });
+
+    this.updateFooter();
+  }
+
+  updateFooter() {
+    document.getElementById('snippets-count').textContent = `${this.filteredSnippets.length} snippets`;
+    const maxPages = Math.ceil(this.filteredSnippets.length / this.itemsPerPage);
+    document.getElementById('current-page').textContent = this.currentPage;
+    document.getElementById('btn-prev').disabled = this.currentPage <= 1;
+    document.getElementById('btn-next').disabled = this.currentPage >= maxPages;
   }
 
   async handleCopy(snippet) {
@@ -128,6 +223,9 @@ class SnippyApp {
 
   async handleToggleFavorite(id, favorite) {
     await this.snippetService.update(id, { favorite });
+    const snippet = this.allSnippets.find((s) => s.id === id);
+    if (snippet) snippet.favorite = favorite;
+    this.renderTable();
   }
 
   handleEdit(snippet) {
@@ -137,10 +235,14 @@ class SnippyApp {
       onSave: async (data) => {
         try {
           await this.snippetService.update(snippet.id, data);
-          Toast.success('Snippet updated');
-          await this.loadAndRender();
+          Toast.success('Updated');
+          const idx = this.allSnippets.findIndex((s) => s.id === snippet.id);
+          if (idx >= 0) {
+            this.allSnippets[idx] = { ...this.allSnippets[idx], ...data };
+          }
+          await this.applyFilters();
         } catch (err) {
-          Toast.error('Failed to update snippet');
+          Toast.error('Failed to update');
           console.error(err);
         }
       },
@@ -148,13 +250,15 @@ class SnippyApp {
     modal.open();
   }
 
-  async handleDelete(id) {
+  async handleDelete(id, title) {
+    if (!confirm(`Delete "${title}"?`)) return;
     try {
       await this.snippetService.delete(id);
-      Toast.success('Snippet deleted');
+      this.allSnippets = this.allSnippets.filter((s) => s.id !== id);
+      Toast.success('Deleted');
       await this.applyFilters();
     } catch (err) {
-      Toast.error('Failed to delete snippet');
+      Toast.error('Failed to delete');
       console.error(err);
     }
   }
@@ -164,11 +268,13 @@ class SnippyApp {
       title: 'Create Snippet',
       onSave: async (data) => {
         try {
-          await this.snippetService.create(data);
-          Toast.success('Snippet created');
-          await this.loadAndRender();
+          const created = await this.snippetService.create(data);
+          this.allSnippets.push(created);
+          Toast.success('Created');
+          this.currentPage = 1;
+          await this.applyFilters();
         } catch (err) {
-          Toast.error('Failed to create snippet');
+          Toast.error('Failed to create');
           console.error(err);
         }
       },
@@ -176,42 +282,8 @@ class SnippyApp {
     modal.open();
   }
 
-  async exportSnippets() {
-    try {
-      const json = await this.snippetService.exportJSON();
-      const blob = new Blob([json], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `snipy-export-${Date.now()}.json`;
-      link.click();
-      URL.revokeObjectURL(url);
-      Toast.success('Snippets exported');
-    } catch (err) {
-      Toast.error('Export failed');
-      console.error(err);
-    }
-  }
-
-  importSnippets() {
-    const fileInput = document.getElementById('file-input');
-    fileInput.onchange = async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      try {
-        const text = await file.text();
-        const imported = await this.snippetService.importJSON(text);
-        Toast.success(`Imported ${imported.length} snippets`);
-        await this.loadAndRender();
-      } catch (err) {
-        Toast.error(`Import failed: ${err.message}`);
-        console.error(err);
-      }
-
-      fileInput.value = '';
-    };
-    fileInput.click();
+  showSettings() {
+    Toast.success('Settings coming soon');
   }
 }
 

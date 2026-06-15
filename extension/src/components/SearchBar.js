@@ -1,4 +1,4 @@
-import { COLORS, SEARCH_DEBOUNCE_TIME } from '../utils/constants.js';
+import { SEARCH_DEBOUNCE_TIME } from '../utils/constants.js';
 import { debounce } from '../utils/helpers.js';
 
 export class SearchBar {
@@ -14,36 +14,16 @@ export class SearchBar {
     container.style.cssText = `
       display: flex;
       flex-direction: column;
-      gap: 12px;
-      margin-bottom: 16px;
+      gap: 8px;
     `;
 
-    const searchRow = document.createElement('div');
-    searchRow.style.cssText = `
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    `;
+    // Search input
+    const searchWrapper = document.createElement('div');
+    searchWrapper.className = 'search-input-wrapper';
 
     const searchInput = document.createElement('input');
     searchInput.type = 'text';
     searchInput.placeholder = 'Search snippets...';
-    searchInput.style.cssText = `
-      flex: 1;
-      padding: 10px 12px;
-      background-color: ${COLORS.background};
-      border: 1px solid ${COLORS.border};
-      border-radius: 4px;
-      color: ${COLORS.textPrimary};
-      font-size: 14px;
-      transition: border-color 0.2s;
-    `;
-    searchInput.onfocus = () => {
-      searchInput.style.borderColor = COLORS.primary;
-    };
-    searchInput.onblur = () => {
-      searchInput.style.borderColor = COLORS.border;
-    };
 
     const debouncedSearch = debounce(() => {
       if (this.onSearch) {
@@ -55,14 +35,15 @@ export class SearchBar {
       debouncedSearch();
     };
 
-    searchRow.appendChild(searchInput);
+    searchWrapper.appendChild(searchInput);
 
-    const filterRow = document.createElement('div');
-    filterRow.style.cssText = `
+    // Filters
+    const filtersRow = document.createElement('div');
+    filtersRow.style.cssText = `
       display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
+      gap: 6px;
       align-items: center;
+      flex-wrap: wrap;
     `;
 
     const filters = [
@@ -72,34 +53,22 @@ export class SearchBar {
     ];
 
     let activeFilter = 'all';
+
+    const filterButtons = [];
     filters.forEach(({ label, value }) => {
       const btn = document.createElement('button');
+      btn.className = 'filter-btn';
+      if (value === 'all') btn.classList.add('active');
       btn.textContent = label;
       btn.dataset.filter = value;
-      btn.style.cssText = `
-        padding: 6px 12px;
-        background-color: ${value === 'all' ? COLORS.primary : COLORS.background};
-        border: 1px solid ${value === 'all' ? COLORS.primary : COLORS.border};
-        color: ${value === 'all' ? 'white' : COLORS.textSecondary};
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 12px;
-        font-weight: 500;
-        transition: all 0.2s;
-      `;
 
       btn.onclick = () => {
-        filters.forEach(({ value: v }) => {
-          const filterBtn = filterRow.querySelector(`[data-filter="${v}"]`);
-          if (filterBtn) {
-            const isActive = v === value;
-            filterBtn.style.backgroundColor = isActive ? COLORS.primary : COLORS.background;
-            filterBtn.style.borderColor = isActive ? COLORS.primary : COLORS.border;
-            filterBtn.style.color = isActive ? 'white' : COLORS.textSecondary;
-          }
+        filterButtons.forEach(b => {
+          b.classList.remove('active');
         });
-
+        btn.classList.add('active');
         activeFilter = value;
+
         if (this.onFilterChange) {
           this.onFilterChange({
             query: searchInput.value,
@@ -109,20 +78,13 @@ export class SearchBar {
         }
       };
 
-      filterRow.appendChild(btn);
+      filterButtons.push(btn);
+      filtersRow.appendChild(btn);
     });
 
+    // Category select
     const categorySelect = document.createElement('select');
-    categorySelect.style.cssText = `
-      padding: 6px 8px;
-      background-color: ${COLORS.background};
-      border: 1px solid ${COLORS.border};
-      border-radius: 4px;
-      color: ${COLORS.textSecondary};
-      font-size: 12px;
-      cursor: pointer;
-      transition: border-color 0.2s;
-    `;
+    categorySelect.className = 'category-select';
 
     const allOption = document.createElement('option');
     allOption.value = '';
@@ -146,10 +108,10 @@ export class SearchBar {
       }
     };
 
-    filterRow.appendChild(categorySelect);
+    filtersRow.appendChild(categorySelect);
 
-    container.appendChild(searchRow);
-    container.appendChild(filterRow);
+    container.appendChild(searchWrapper);
+    container.appendChild(filtersRow);
 
     this.element = container;
     return container;
