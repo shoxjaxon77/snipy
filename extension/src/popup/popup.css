@@ -65,7 +65,7 @@
 }
 
 html, body {
-  width: 500px;
+  width: 380px;
   height: 500px;
   background: var(--bg-primary);
   color: var(--text-primary);
