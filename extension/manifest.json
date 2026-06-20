@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Snipy",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Lightning-fast developer snippet manager. One click = copy.",
   "icons": {
     "16": "src/assets/icons/icon16.png",
