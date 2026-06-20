@@ -4,6 +4,7 @@ import { ClipboardService } from '../services/ClipboardService.js';
 import { Modal } from '../components/Modal.js';
 import { Toast } from '../components/Toast.js';
 import { getSnippetIcon, renderIcon } from '../utils/icons.js';
+import { createActionIcon } from '../utils/actionIcons.js';
 
 class SnippyApp {
   constructor() {
@@ -91,18 +92,16 @@ class SnippyApp {
       actionsDiv.className = 'actions-cell';
 
       const btnEdit = document.createElement('button');
-      btnEdit.className = 'btn-action';
-      btnEdit.textContent = '✏️';
-      btnEdit.title = 'Edit';
+      btnEdit.className = 'btn-action btn-action-edit';
+      btnEdit.appendChild(createActionIcon('edit', 'Edit snippet'));
       btnEdit.onclick = (e) => {
         e.stopPropagation();
         this.handleEdit(snippet);
       };
 
       const btnDelete = document.createElement('button');
-      btnDelete.className = 'btn-action';
-      btnDelete.textContent = '🗑️';
-      btnDelete.title = 'Delete';
+      btnDelete.className = 'btn-action btn-action-delete';
+      btnDelete.appendChild(createActionIcon('delete', 'Delete snippet'));
       btnDelete.onclick = (e) => {
         e.stopPropagation();
         this.handleDelete(snippet.id, snippet.title);
