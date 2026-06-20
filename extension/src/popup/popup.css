@@ -4,28 +4,28 @@
    ============================================ */
 
 :root {
-  /* Background & Surfaces - Deep purple/navy matching icon */
-  --bg-primary: #0a0d1a;        /* Deep navy - Main background */
-  --bg-secondary: #12152b;      /* Slightly lighter navy - Surfaces */
-  --bg-tertiary: #1a1f3a;       /* Navy with purple tint - Inputs */
+  /* Background & Surfaces - Deep purple/black matching icon */
+  --bg-primary: #0f0a17;        /* Deep black-purple - Main background */
+  --bg-secondary: #1a1527;      /* Dark purple - Surfaces */
+  --bg-tertiary: #241c3a;       /* Purple tint - Inputs */
 
   /* Borders */
-  --border-subtle: #12152b;     /* Dark navy - Subtle dividers */
-  --border-default: #1a1f3a;    /* Navy - Default borders */
-  --border-emphasis: #2d3256;   /* Purple-navy - Focused/hover */
+  --border-subtle: #1a1527;     /* Dark purple - Subtle dividers */
+  --border-default: #241c3a;    /* Purple - Default borders */
+  --border-emphasis: #3d2e5a;   /* Bright purple - Focused/hover */
 
   /* Text */
-  --text-primary: #f0f4f8;      /* Near white - Primary text */
-  --text-secondary: #cbd5e1;    /* Light gray - Secondary text, content */
-  --text-tertiary: #94a3b8;     /* Gray - Muted text */
-  --text-muted: #64748b;        /* Dark gray - Very muted text */
+  --text-primary: #f5f5f5;      /* Near white - Primary text */
+  --text-secondary: #d0d0d0;    /* Light gray - Secondary text, content */
+  --text-tertiary: #9a9aaa;     /* Gray - Muted text */
+  --text-muted: #6b6b7a;        /* Dark gray - Very muted text */
 
-  /* Accent - Bright cyan/blue matching icon gradient */
-  --accent-primary: #00d9ff;    /* Bright cyan - Primary accent */
-  --accent-hover: #00a8cc;      /* Darker cyan - Hover state */
-  --accent-light: #33f3ff;      /* Lighter cyan - Highlights */
-  --accent-subtle: rgba(0, 217, 255, 0.12);   /* Cyan alpha bg */
-  --accent-emphasis: rgba(0, 217, 255, 0.2);  /* Stronger cyan alpha */
+  /* Accent - Bright violet/purple matching icon */
+  --accent-primary: #8b5cf6;    /* Bright violet - Primary accent */
+  --accent-hover: #7c3aed;      /* Deeper violet - Hover state */
+  --accent-light: #a78bfa;      /* Lighter purple - Highlights */
+  --accent-subtle: rgba(139, 92, 246, 0.12);   /* Violet alpha bg */
+  --accent-emphasis: rgba(139, 92, 246, 0.2);  /* Stronger violet alpha */
 
   /* Semantic Colors */
   --success: #10b981;           /* Emerald 500 */
@@ -53,15 +53,15 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(0, 217, 255, 0.4);
+  background: rgba(139, 92, 246, 0.5);
   border-radius: 4px;
   transition: background 0.15s ease;
-  box-shadow: 0 0 6px rgba(0, 217, 255, 0.3);
+  box-shadow: 0 0 6px rgba(139, 92, 246, 0.4);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 217, 255, 0.6);
-  box-shadow: 0 0 10px rgba(0, 217, 255, 0.5);
+  background: rgba(139, 92, 246, 0.7);
+  box-shadow: 0 0 10px rgba(139, 92, 246, 0.6);
 }
 
 html, body {
@@ -109,12 +109,12 @@ header {
 .header-left h1 {
   font-size: 18px;
   font-weight: 700;
-  background: linear-gradient(135deg, var(--accent-light) 0%, var(--accent-primary) 100%);
+  background: linear-gradient(135deg, #c4b5fd 0%, #8b5cf6 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   letter-spacing: -0.5px;
-  filter: drop-shadow(0 0 10px rgba(0, 217, 255, 0.3));
+  filter: drop-shadow(0 0 12px rgba(139, 92, 246, 0.6));
 }
 
 .header-left p {
@@ -131,8 +131,8 @@ header {
 }
 
 .btn-header {
-  background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-hover) 100%);
-  border: 1.5px solid var(--accent-light);
+  background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+  border: 1.5px solid #a78bfa;
   color: white;
   padding: 7px 14px;
   border-radius: 6px;
@@ -141,13 +141,13 @@ header {
   font-weight: 600;
   transition: all 0.15s ease;
   font-family: inherit;
-  box-shadow: 0 0 12px rgba(0, 217, 255, 0.4);
+  box-shadow: 0 0 15px rgba(139, 92, 246, 0.5);
 }
 
 .btn-header:hover {
-  background: linear-gradient(135deg, var(--accent-hover) 0%, var(--accent-primary) 100%);
-  border-color: var(--accent-light);
-  box-shadow: 0 0 20px rgba(0, 217, 255, 0.6);
+  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+  border-color: #c4b5fd;
+  box-shadow: 0 0 25px rgba(139, 92, 246, 0.7);
   transform: translateY(-2px);
 }
 
@@ -182,8 +182,8 @@ header {
 
 .search-input:focus {
   background: var(--bg-tertiary);
-  border-color: var(--accent-primary);
-  box-shadow: 0 0 12px rgba(0, 217, 255, 0.4), inset 0 0 8px rgba(0, 217, 255, 0.08);
+  border-color: #8b5cf6;
+  box-shadow: 0 0 15px rgba(139, 92, 246, 0.5), inset 0 0 8px rgba(139, 92, 246, 0.1);
 }
 
 .search-input::placeholder {
@@ -221,11 +221,11 @@ header {
   text-align: left;
   font-size: 10px;
   font-weight: 700;
-  color: var(--accent-primary);
+  color: #a78bfa;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   white-space: nowrap;
-  text-shadow: 0 0 8px rgba(0, 217, 255, 0.3);
+  text-shadow: 0 0 8px rgba(139, 92, 246, 0.4);
 }
 
 .col-name {
@@ -257,9 +257,9 @@ header {
 }
 
 .snippets-table tbody tr:hover {
-  background: rgba(0, 217, 255, 0.08);
-  border-bottom-color: var(--accent-primary);
-  box-shadow: inset 0 0 8px rgba(0, 217, 255, 0.1);
+  background: rgba(139, 92, 246, 0.1);
+  border-bottom-color: #8b5cf6;
+  box-shadow: inset 0 0 8px rgba(139, 92, 246, 0.12);
 }
 
 .snippets-table tbody tr:last-child {
@@ -330,11 +330,11 @@ header {
 }
 
 .btn-action:hover {
-  background: rgba(0, 217, 255, 0.15);
-  border-color: var(--accent-primary);
-  color: var(--accent-light);
+  background: rgba(139, 92, 246, 0.15);
+  border-color: #8b5cf6;
+  color: #c4b5fd;
   transform: scale(1.1);
-  box-shadow: 0 0 8px rgba(0, 217, 255, 0.4);
+  box-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
 }
 
 .btn-action:active {
